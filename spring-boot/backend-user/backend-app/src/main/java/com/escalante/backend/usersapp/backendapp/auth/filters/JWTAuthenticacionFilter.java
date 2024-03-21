@@ -1,7 +1,6 @@
 package com.escalante.backend.usersapp.backendapp.auth.filters;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +66,7 @@ public class JWTAuthenticacionFilter extends UsernamePasswordAuthenticationFilte
                         subject(username).
                         signWith(TokenJWTConfig.SECRET_KEY).
                         issuedAt(new Date()).
-                        expiration(new Date(System.currentTimeMillis() + 3600000)) // expirates 1 hours
+                        expiration(new Date(System.currentTimeMillis() + 3600000)) // expirates at 1 hours
                         .compact();
 
         response.addHeader(TokenJWTConfig.HEADER_AUTHORIZATION, TokenJWTConfig.PREFIX_TOKEN+token);

@@ -17,11 +17,21 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import com.escalante.backend.usersapp.backendapp.auth.TokenJWTConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParserBuilder;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+
+/*
+ * 
+ * Clase que verifica el token que envia el usuario, que no se haya modificado
+ * 
+ */
 public class JWTValidationFilter extends BasicAuthenticationFilter{
 
     public JWTValidationFilter(AuthenticationManager authenticationManager) {
@@ -35,33 +45,36 @@ public class JWTValidationFilter extends BasicAuthenticationFilter{
             
        String header = request.getHeader(TokenJWTConfig.HEADER_AUTHORIZATION);
        
-       if(header == null || !header.startsWith("")){
+       if(header == null || !header.startsWith(TokenJWTConfig.PREFIX_TOKEN)){
             chain.doFilter(request, response);
             return;
        }
        String token = header.replace(TokenJWTConfig.PREFIX_TOKEN, "");
-       byte[] byteDecore = Base64.getDecoder().decode(token);
-       String tokenDecode = new String(byteDecore);
-
        
-       String[] tokenArr = tokenDecode.split("\\.");
-       String secret = tokenArr[0];
-       String username = tokenArr[1];
-       
-       if(TokenJWTConfig.SECRET_KEY.equals(secret)){
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            chain.doFilter(request, response);
-       } else {
-            Map<String, String> body = new HashMap<>();
-            body.put("message","the token is not valid!");
+          try {
+               Claims claims = Jwts.parser().
+               verifyWith(TokenJWTConfig.SECRET_KEY).
+               build().parseSignedClaims(token).
+               getPayload();
+               
+               String username = claims.getSubject(); // objenemos el username del token
+               
+               List<GrantedAuthority> authorities = new ArrayList<>();
+               authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    
+               UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+               SecurityContextHolder.getContext().setAuthentication(auth);
+               
+               chain.doFilter(request, response);
 
-            response.getWriter().write(new ObjectMapper().writeValueAsString(body));
-            response.setStatus(403);
-            response.setContentType("application/json");
+          } catch(JwtException e) {
+               Map<String, String> body = new HashMap<>();
+               body.put("error", e.getMessage());
+               body.put("message", "the token is not valid!");
+
+               response.getWriter().write(new ObjectMapper().writeValueAsString(body));
+               response.setStatus(403);
+               response.setContentType("application/json");
        }
     }
     
