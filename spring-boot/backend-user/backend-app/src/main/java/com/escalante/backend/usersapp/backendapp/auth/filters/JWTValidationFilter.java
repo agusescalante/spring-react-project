@@ -2,7 +2,8 @@ package com.escalante.backend.usersapp.backendapp.auth.filters;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,10 +57,14 @@ public class JWTValidationFilter extends BasicAuthenticationFilter{
                build().parseSignedClaims(token).
                getPayload();
                
+
+               Object authoritiesClaims = claims.get("authorities");
                String username = claims.getSubject(); // objenemos el username del token
                
-               List<GrantedAuthority> authorities = new ArrayList<>();
-               authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+               Collection<? extends GrantedAuthority> authorities =    Arrays.
+                                                       asList(new ObjectMapper().
+                                                       readValue(authoritiesClaims.toString().getBytes(), SimpleGrantedAuthority.class));
+               
                     
                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
                SecurityContextHolder.getContext().setAuthentication(auth);

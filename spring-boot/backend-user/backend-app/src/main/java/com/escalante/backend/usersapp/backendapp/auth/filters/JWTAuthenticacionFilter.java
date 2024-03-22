@@ -1,14 +1,17 @@
 package com.escalante.backend.usersapp.backendapp.auth.filters;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.escalante.backend.usersapp.backendapp.auth.TokenJWTConfig;
@@ -17,6 +20,7 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -60,9 +64,19 @@ public class JWTAuthenticacionFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
        
+        String adminUser = "ROLE_ADMIN"; // aca podriamos buscar en base, y poner un poco de logica, podria ser una lista de "role administradores"
         String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
         
+        Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
+        
+        Boolean isAdmin = roles.stream().anyMatch(r -> r.getAuthority().equals(adminUser));
+        // guardamos los roles                  aca en los claims se podrian guardar otros datos, no sensibles
+        Claims claims = (Claims) Jwts.claims();
+        claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
+        claims.put("isAdmin", isAdmin);
+        
         String token = Jwts.builder().
+                        setClaims(claims).
                         subject(username).
                         signWith(TokenJWTConfig.SECRET_KEY).
                         issuedAt(new Date()).
