@@ -48,12 +48,10 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional(readOnly = true)
     public Optional<UserDto> findById(Long id){
-        Optional<User> o = repo.findById(id);
-        if(o.isPresent())
-            return Optional.of(
-                DtoMapperUser.getInstance().setUser(o.orElseThrow()).build()
-            );
-        return Optional.empty();
+        return repo.findById(id).map(u -> DtoMapperUser.
+                                        getInstance().
+                                        setUser(u).
+                                        build());
     }
 
     @Override
@@ -92,7 +90,7 @@ public class UserServiceImpl implements UserService{
     /**
      * Busca en la base el user role, para obtener el id
      * 
-     * @return List<Role>
+     * @return Role List
      */
     private List<Role> getRoles(){
         List<Role> roles = new ArrayList<>();
