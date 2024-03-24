@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import com.escalante.backend.usersapp.backendapp.auth.SimpleGrantedAuthorityJsonCreator;
 import com.escalante.backend.usersapp.backendapp.auth.TokenJWTConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,10 +61,10 @@ public class JWTValidationFilter extends BasicAuthenticationFilter{
 
                Object authoritiesClaims = claims.get("authorities");
                String username = claims.getSubject(); // objenemos el username del token
-               
                Collection<? extends GrantedAuthority> authorities =    Arrays.
                                                        asList(new ObjectMapper().
-                                                       readValue(authoritiesClaims.toString().getBytes(), SimpleGrantedAuthority.class));
+                                                       addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthorityJsonCreator.class).
+                                                       readValue(authoritiesClaims.toString().getBytes(), SimpleGrantedAuthority[].class));
                
                     
                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);

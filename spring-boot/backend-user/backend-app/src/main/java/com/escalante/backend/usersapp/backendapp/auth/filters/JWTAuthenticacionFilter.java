@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -71,12 +70,11 @@ public class JWTAuthenticacionFilter extends UsernamePasswordAuthenticationFilte
         
         Boolean isAdmin = roles.stream().anyMatch(r -> r.getAuthority().equals(adminUser));
         // guardamos los roles                  aca en los claims se podrian guardar otros datos, no sensibles
-        Claims claims = (Claims) Jwts.claims();
-        claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
-        claims.put("isAdmin", isAdmin);
         
         String token = Jwts.builder().
-                        setClaims(claims).
+                        claim("authorities", new ObjectMapper().writeValueAsString(roles)).
+                        claim("isAdmin", isAdmin).
+                        //claim("username", username).
                         subject(username).
                         signWith(TokenJWTConfig.SECRET_KEY).
                         issuedAt(new Date()).

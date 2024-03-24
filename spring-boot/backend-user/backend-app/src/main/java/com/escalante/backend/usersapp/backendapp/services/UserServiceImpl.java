@@ -3,12 +3,15 @@ package com.escalante.backend.usersapp.backendapp.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.escalante.backend.usersapp.backendapp.models.dto.UserDto;
+import com.escalante.backend.usersapp.backendapp.models.dto.mapper.DtoMapperUser;
 import com.escalante.backend.usersapp.backendapp.models.entities.Role;
 import com.escalante.backend.usersapp.backendapp.models.entities.User;
 import com.escalante.backend.usersapp.backendapp.models.request.UserRequest;
@@ -29,23 +32,37 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> findAll(){
-        return (List<User>) repo.findAll();
+    public List<UserDto> findAll(){
+        List<User> usrs = (List<User>) repo.findAll();
+        // List<UserDto> userDtos = new ArrayList<>();
+        // for(User u: usrs){
+        //     userDtos.add(DtoMapperUser.getInstance().setUser(u).build());
+        // }
+        return usrs.stream().map(u -> DtoMapperUser.
+                                    getInstance().
+                                    setUser(u).
+                                    build()).
+                                    collect(Collectors.toList());
     }
     
     @Override
     @Transactional(readOnly = true)
-    public Optional<User> findById(Long id){
-        return repo.findById(id);
+    public Optional<UserDto> findById(Long id){
+        Optional<User> o = repo.findById(id);
+        if(o.isPresent())
+            return Optional.of(
+                DtoMapperUser.getInstance().setUser(o.orElseThrow()).build()
+            );
+        return Optional.empty();
     }
 
     @Override
     @Transactional
-    public User save(User u){
+    public UserDto save(User u){
         String passwordEncode = passwordEncoder.encode(u.getPassword());
         u.setRolesList(this.getRoles()); // default role, ver para mejorarlo
         u.setPassword(passwordEncode);
-        return repo.save(u);
+        return DtoMapperUser.getInstance().setUser(repo.save(u)).build();
     }
 
     @Override
@@ -56,13 +73,13 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public Optional<User> update(UserRequest user, Long id){
-        Optional<User> op = this.findById(id);
+    public Optional<UserDto> update(UserRequest user, Long id){
+        Optional<User> op = repo.findById(id);
         if(op.isPresent()){
             User us = op.orElseThrow();
             us.setEmail(user.getEmail());
             us.setUsername(user.getUsername());
-            return Optional.of(this.save(us));
+            return Optional.of(DtoMapperUser.getInstance().setUser(repo.save(us)).build());
         }
         return Optional.empty();
     }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.escalante.backend.usersapp.backendapp.models.dto.UserDto;
 import com.escalante.backend.usersapp.backendapp.models.entities.User;
 import com.escalante.backend.usersapp.backendapp.models.request.UserRequest;
 import com.escalante.backend.usersapp.backendapp.services.UserService;
@@ -36,13 +37,13 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<User> list(){
+    public List<UserDto> list(){
         return userService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> showById(@PathVariable Long id){
-        Optional<User> userOp = userService.findById(id);
+        Optional<UserDto> userOp = userService.findById(id);
         if(userOp.isPresent())
             return ResponseEntity.ok(userOp.orElseThrow());
         return ResponseEntity.notFound().build();
@@ -67,7 +68,7 @@ public class UserController {
     public ResponseEntity<?> update(@Valid @RequestBody UserRequest user, BindingResult result, @PathVariable Long id){
         if(result.hasErrors())  return validation(result);
            
-        Optional<User> us = userService.update(user, id);
+        Optional<UserDto> us = userService.update(user, id);
         if(us.isPresent())
             return ResponseEntity.status(HttpStatus.CREATED).body(us.orElseThrow());
         return ResponseEntity.notFound().build();
@@ -75,7 +76,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) { 
-        Optional<User> op = userService.findById(id);
+        Optional<UserDto> op = userService.findById(id);
         if(op.isPresent()){
             userService.deleteById(id);
             return ResponseEntity.noContent().build(); //code 204
