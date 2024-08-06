@@ -56,6 +56,7 @@ public class JWTAuthenticacionFilter extends UsernamePasswordAuthenticationFilte
             e.printStackTrace();
         }
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
+        logger.info("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" + authToken);
         return authencationManager.authenticate(authToken);
     }
 

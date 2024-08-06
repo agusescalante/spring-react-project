@@ -4,9 +4,8 @@
  */
 
 import usersApi from "../apis/usersApi";
-import { PORT, SERVER } from "./serverConfig"
 
-const USER_PATH = SERVER+':'+PORT+'/users';
+const USER_PATH = `${import.meta.env.VITE_SERVER_BACKEND}`+':'+`${import.meta.env.VITE_API_PORT}`+'/users';
 
 /* esto esta config en usersApi.js
 const config = () => {

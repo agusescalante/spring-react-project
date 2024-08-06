@@ -1,10 +1,8 @@
 import axios from "axios"
-import {PORT, SERVER} from "../../services/serverConfig"
 
 export const loginUser = async ({username, password}) => {
 
-    const path = SERVER+':'+PORT+'/login';
-    console.log(path);
+    const path = `${import.meta.VITE_SERVER_BACKEND}`+':'+`${import.meta.VITE_API_PORT}`+'/login';
     try {
         return await axios.post(path, {username, password})
     } catch (error) {

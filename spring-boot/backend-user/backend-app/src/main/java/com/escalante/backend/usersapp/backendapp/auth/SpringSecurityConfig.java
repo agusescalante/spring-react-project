@@ -41,9 +41,9 @@ public class SpringSecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests()
+        http.authorizeHttpRequests()
         .requestMatchers(HttpMethod.GET, "/users").permitAll() // public
-        
+        .requestMatchers(HttpMethod.POST, "/users").permitAll() // public
         .requestMatchers(HttpMethod.GET, "/users/{id}").hasAnyRole("USER", "ADMIN") // users que tengan este rol  
         
         .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
@@ -54,8 +54,8 @@ public class SpringSecurityConfig {
         .addFilter(new JWTValidationFilter(conf.getAuthenticationManager()))
         .csrf(config -> config.disable())
         .sessionManagement(managment -> managment.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .cors(c -> corsConfigurationSource())
-        .build();
+        .cors(c -> corsConfigurationSource());
+        return http.build();
     }
     
     @Bean
@@ -71,10 +71,16 @@ public class SpringSecurityConfig {
         return source;
     }
 
+    // @Bean
+    // CorsFilter corsFilter(){
+    //     CorsFilter bean = new CorsFilter(corsConfigurationSource());
+    //     //bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    //     return bean;
+    // }
+
     @Bean
-    FilterRegistrationBean<CorsFilter> corsFilter(){
-        FilterRegistrationBean<CorsFilter> bean = 
-                                new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));
+    FilterRegistrationBean<CorsFilter> CorsFilter(){
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }

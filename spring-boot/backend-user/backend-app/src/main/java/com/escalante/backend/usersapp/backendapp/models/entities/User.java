@@ -3,6 +3,8 @@ package com.escalante.backend.usersapp.backendapp.models.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.escalante.backend.usersapp.backendapp.models.IUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +22,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="users")
-public class User {
+public class User implements IUser{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +36,9 @@ public class User {
     @NotBlank
     @Email
     private String email;
+
+    @Transient // no queda enlazado a la tabla db
+    private boolean admin;
 
     //@NotEmpty(message = "field cannot empty")
     @NotBlank
@@ -102,5 +108,13 @@ public class User {
         this.roles = roles;
     }
 
+    @Override
+    public boolean isAdmin(){
+        return admin;
+    }
+
+    public void setAdmin(boolean admin){
+        this.admin = admin;
+    }
 
 }
