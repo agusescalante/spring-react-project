@@ -1,11 +1,10 @@
-import { useContext } from "react";
 import { NavLink } from "react-router-dom";
-import { AuthContext } from "../../auth/context/AuthContext";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export const NavBar = () => {
 
-    const { login, handlerLogOut } = useContext(AuthContext);
-
+    const { login, handlerLogOut } = useAuth();
+    //const { user } = login;
     return( <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
             <a className="navbar-brand" href="#"></a>
@@ -17,16 +16,18 @@ export const NavBar = () => {
                 <ul className="navbar-nav">
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/users">Users</NavLink>
-                    </li>       
+                    </li>
+                    { !login.isAdmin ||
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/users/register">Register user</NavLink>
                     </li>
+                    }
                 </ul>
             </div>
 
             <div className="collapse navbar-collapse justify-content-end" id="navbarSupportedContent-logOut">
                 <span className="nav-item nav-link text-primary mx-3">
-                    { login.user?.username }
+                    { login.user }
                 </span>
                 <button className="btn btn-outline-success" onClick={handlerLogOut}>Log Out</button>
             </div>

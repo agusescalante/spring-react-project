@@ -1,78 +1,74 @@
-import { useReducer, useState } from "react";
-import { usersReducer } from "../reducers/usersReducer";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { findAll, remove, save, update } from "../services/userService";
+import { useDispatch, useSelector } from "react-redux";
+import { loadingUser, removeUser, updateUser, addUser, onUserSelectedForm, onOpenForm, initialUserForm, loadingError, onCloseForm } from "../store/slices/users/usersSlice";
+import { useAuth } from "../auth/hooks/useAuth";
 
-const initialUsers = [];
 
-const initialUserForm =  {
-    id: 0,
-    username: '',
-    password: '',
-    email: ''
-};
 
-const initialErrors =  {
-    username: null,
-    password: null,
-    email: null
-};
 export const useUsers = () => {
 
-    const [users, dispatch] = useReducer(usersReducer, initialUsers);
-    const[userSelected, setUserSelected] = useState(initialUserForm);
-    const[visibleForm, setVisibleForm] = useState(false);
-    const navigate = useNavigate();
-    const[errors, setErrors] = useState(initialErrors);
-    const getUsers = async () => {
-        const result = await findAll();
+    const { users, userSelected, visibleForm, errors } = useSelector(state => state.users);
+    const dispatch = useDispatch();
 
-        //console.log(result.data);
+    const navigate = useNavigate();
+
+    const {login, handlerLogOut} = useAuth();
+
+
+    const getUsers = async () => {
+
         try {
-            dispatch({
-                type: 'loadingUsers',
-                payload: result.data
-            });
+            const result = await findAll();
+        
+            dispatch(loadingUser(result.data));
+            
         } catch (error) {
-           // console.log('no conection to server');
+            if(error.response?.status == 401) { // token expirated
+                handlerLogOut();
+            }
         }
     }
 
     const handlerAddUser = async (user) => {
 
+        if(!login.isAdmin) return;
         let response;
         try {
-            if (user.id == 0)
+            
+            let type = 'U';
+            if (user.id == 0){
                 response = await save(user);
-            else
+                dispatch(addUser(response.data));
+                type = 'A';
+            } else {
                 response = await update(user);
-
-            let type = (user.id == 0) ? 'A' : 'U';
-            dispatch({
-                type,
-                payload: response.data
-            });
+                dispatch(updateUser(response.data));
+            }
 
             Swal.fire({
                 title: (type === 'U') ? 'User  updated' : 'User created',
                 text: (type === 'U') ? 'User updated' : 'User created successly!',
                 icon: "success"
-            }
-            );
+                });
             handlerCloseForm();
             navigate('/users');
         } catch (error) { // todo: refactor error handler
             if(error.response && error.response.status == 400) {
-                setErrors(error.response.data);
+                dispatch(loadingError(error.response.data));
             } else if(error.response && error.response.status == 500
                 && error.response.data?.message?.includes('constraint')) { 
 
                     if(error.response.data?.message?.includes('UK_username'))
-                        setErrors({username: 'Username already exists'})
+                        dispatch(loadingError({username: 'Username already exists'}));
                     if(error.response.data?.message?.includes('UK_email'))
-                        setErrors({email: 'Email already exists'})
-            } else 
+                        dispatch(loadingError({email: 'Email already exists'}));
+            } else if(error.response?.status == 401) { // token expirated
+                handlerLogOut();
+            }
+            
+            else 
                 throw error; // otro error
         }
     }
@@ -88,42 +84,42 @@ export const useUsers = () => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, delete it!"
-          }).then((result) => {
+          }).then( async (result) => {
             if (result.isConfirmed) {
-                remove(id);
-                dispatch({
-                    type: 'D',
-                    payload: id
-                });
-                Swal.fire({
-                    title: "Deleted!",
-                    text: "Your file has been deleted.",
-                    icon: "success"
-                });
+                try {
+                    await remove(id);
+                    dispatch(removeUser(id));
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "user with ID "+ id +" has been deleted.",
+                        icon: "success"
+                    });
+                } catch (error) {
+                    if(error.response?.status == 401) { // token expirated
+                        handlerLogOut();
+                    }
+                }
             }
           });
     }
 
     const handlerUserSelectedForm = (user) => {
-        setVisibleForm(true);
-        setUserSelected({...user});
+        dispatch(onUserSelectedForm({...user}));
     }
 
     const handlerOpenForm = () => {
-        setVisibleForm(true);
+        dispatch(onOpenForm());
     }
 
     const handlerCloseForm = () => {
-        setVisibleForm(false);
-        setUserSelected(initialUserForm);
-        setErrors({username:'', email:'', password:''});
+        dispatch(onCloseForm());
+        dispatch(loadingError({username:'', email:'', password:''}));
     }
     return {
         users,
         userSelected,
         initialUserForm,
         visibleForm,
-        initialErrors,
         errors,
         handlerAddUser,
         handlerRemoveUser,

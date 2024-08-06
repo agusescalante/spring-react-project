@@ -1,14 +1,15 @@
-import { useContext, useEffect, useState } from "react";
-import Swal from "sweetalert2";
-import { UserContext } from "../context/UserContext";
+import {  useEffect, useState } from "react";
+import { useUsers } from "../hooks/useUsers";
 
 export const UserForm = ({userSelected, handlerCloseForm}) => {
 
-    const {initialUserForm, handlerAddUser, errors} = useContext(UserContext);
+    const {initialUserForm, handlerAddUser, errors} = useUsers();
 
     const [userForm, setUserForm] = useState(initialUserForm);
 
-    const {username, password, email, id} = userForm;
+    const[ checked, setChecked] = useState(userForm.admin);
+
+    const {username, password, email, id, admin} = userForm;
    
     useEffect(()=>{
         setUserForm({
@@ -30,6 +31,15 @@ export const UserForm = ({userSelected, handlerCloseForm}) => {
         setUserForm(initialUserForm);
     }
 
+    const onCheckboxChange = () => {
+        setChecked(!checked);
+        setUserForm(
+            {
+            ...userForm,
+            admin: checked
+            }
+        )
+    }
 
     const onSubmit = (e) => {
         // para evitar que se refresque pagina
@@ -87,6 +97,15 @@ export const UserForm = ({userSelected, handlerCloseForm}) => {
                 value = {email}
                 onChange={onInputChange} 
             /><p className="text-danger"> { errors?.email } </p>
+            <div className="my-3 form-check">
+                <input type="checkbox" 
+                    name = "admin"
+                    checked={admin}
+                    className="form-check-input"
+                    onChange = {onCheckboxChange}
+                />
+                <label className="form-check-label">Admin</label>
+            </div>
             <button className="btn btn-primary" type="submit">{id > 0 ? "update" : "add"}</button>
             {!handlerCloseForm || <button className="btn btn-primary mx-2" type="button" onClick={() => onCloseForm()}>close</button>}
         </form>

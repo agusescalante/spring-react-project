@@ -3,17 +3,27 @@
  * uses GET /users 
  */
 
-import axios from "axios"
+import usersApi from "../apis/usersApi";
 import { PORT, SERVER } from "./serverConfig"
 
 const USER_PATH = SERVER+':'+PORT+'/users';
+
+/* esto esta config en usersApi.js
+const config = () => {
+    return { 
+        headers: {
+            "Authorization": sessionStorage.getItem("token"),
+            "Content-Type": "application/json"}
+    };
+}
+*/
 export const findAll = async() => {
 
     try {
-        const response = await axios.get(USER_PATH);
+        const response = await usersApi.get(USER_PATH);
         return response;
     } catch (error) {
-        throw error.code;
+        throw error;
     }
 }
 
@@ -21,10 +31,10 @@ export const findAll = async() => {
  * 
  * uses POST /users 
  */
-export const save = async({username, email, password}) => {
+export const save = async({username, email, password, admin}) => {
 
     try {
-        const response = await axios.post(USER_PATH, {username, email, password});
+        const response = await usersApi.post(USER_PATH, {username, email, password, admin});
         return response;
     } catch (error) {
         throw error;
@@ -35,10 +45,10 @@ export const save = async({username, email, password}) => {
  * 
  * uses PUT /users 
  */
-export const update = async({id, username, email}) => {
+export const update = async({id, username, email, admin}) => {
 
     try {
-        const response = await axios.put(`${USER_PATH}/${id}`, {username, email});
+        const response = await usersApi.put(`${USER_PATH}/${id}`, {username, email, admin});
         return response;
     } catch (error) {
         throw error;
@@ -53,7 +63,7 @@ export const update = async({id, username, email}) => {
 export const remove = async(id) => {
 
     try {
-        await axios.delete(`${USER_PATH}/${id}`);
+        await usersApi.delete(`${USER_PATH}/${id}`);
     } catch (error) {
         throw error;
     }

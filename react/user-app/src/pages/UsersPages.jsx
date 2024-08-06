@@ -1,12 +1,14 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { UserList } from "../components/UserList";
 import { UserModalForm } from "../components/UserModalForm";
-import { UserContext } from "../context/UserContext";
+import { useAuth } from "../auth/hooks/useAuth";
+import { useUsers } from "../hooks/useUsers";
 
 
 
 export const UsersPages = () => {
 
+    const { login } = useAuth();
     // lo tomamos del contexto
     const 
     {
@@ -14,7 +16,7 @@ export const UsersPages = () => {
         visibleForm,
         handlerOpenForm, 
         getUsers
-    } = useContext(UserContext);
+    } = useUsers();
     
     useEffect(() => {
         getUsers();
@@ -29,7 +31,7 @@ export const UsersPages = () => {
             <div className="row">
                     
                     <div className="col">
-                    {visibleForm || 
+                    { (visibleForm || !login.isAdmin)  || 
                         <button 
                             className="btn btn-primary my-2" onClick={handlerOpenForm}>new user
                         </button>
