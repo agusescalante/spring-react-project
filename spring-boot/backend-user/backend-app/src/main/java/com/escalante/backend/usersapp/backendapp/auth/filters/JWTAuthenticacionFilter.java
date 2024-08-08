@@ -63,7 +63,7 @@ public class JWTAuthenticacionFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-       
+
         String adminUser = "ROLE_ADMIN"; // aca podriamos buscar en base, y poner un poco de logica, podria ser una lista de "role administradores"
         String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
         

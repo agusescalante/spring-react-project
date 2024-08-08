@@ -43,7 +43,8 @@ public class SpringSecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
         .requestMatchers(HttpMethod.GET, "/users").permitAll() // public
-        .requestMatchers(HttpMethod.POST, "/users").permitAll() // public
+        .requestMatchers(HttpMethod.GET, "/users/page/{page}").permitAll() // public
+        //requestMatchers(HttpMethod.POST, "/users").permitAll() // public
         .requestMatchers(HttpMethod.GET, "/users/{id}").hasAnyRole("USER", "ADMIN") // users que tengan este rol  
         
         .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
@@ -61,7 +62,8 @@ public class SpringSecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        //config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        config.setAllowedOriginPatterns(Arrays.asList("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

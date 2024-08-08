@@ -2,6 +2,8 @@ package com.escalante.backend.usersapp.backendapp.repositories;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -16,4 +18,6 @@ public interface UserRepository extends CrudRepository<User, Long>{
     // el uno porque corresponde al primer parametro, este metodo con cumple con la nomenclatura por eso el @query
     @Query("select u from User u where u.username=?1")
     Optional<User> getUserbyUsername(String username);
+
+    Page<User> findAll(Pageable p);
 }
