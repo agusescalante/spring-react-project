@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialLogin = JSON.parse(sessionStorage.getItem('login')) || {
     isAuth: false,
     isAdmin: false,
-    user: undefined 
+    user: undefined,
+    isLoginLoading: false
 };
 
 export const authSlice = createSlice({
@@ -11,20 +12,25 @@ export const authSlice = createSlice({
     initialState: initialLogin,
     reducers: {
         onLogin: (state, action) => {
-            console.log(action);
             state.isAuth = true;
             state.isAdmin = action.payload.isAdmin;
-            state.user = action.payload.user.username;
+            state.user = action.payload.user;
+            state.isLoginLoading  = false;
         },
-        onLogout: (state, action) => {
-            state.isAuth = false, 
-            state.isAdmin = false,
-            state.user = undefined
+        onLogout: (state) => {
+            state.isAuth = false;
+            state.isAdmin = false;
+            state.user = undefined;
+            state.isLoginLoading  = false;
+        },
+        onSetLoging: (state) => {
+            state.isLoginLoading  = true;
         }
     }
 });
 
 export const {
     onLogin,
-    onLogout
+    onLogout,
+    onSetLoging
 } = authSlice.actions;

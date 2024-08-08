@@ -21,7 +21,9 @@ export const usersSlice = createSlice({
         users: [],
         userSelected : initialUserForm,
         visibleForm: false,
-        errors : initialErrors
+        paginator: {},
+        errors : initialErrors,
+        isLoading: true
     },
     reducers: {
         addUser: (state, action) => {
@@ -49,7 +51,9 @@ export const usersSlice = createSlice({
             state.visibleForm = false; // cuando se agrega user se reinicia
         },
         loadingUser: (state, action) => {
-            state.users = action.payload;
+            state.users = action.payload.content; // en content viene el paginado
+            state.paginator = action.payload;
+            state.isLoading = false;
         },
         onUserSelectedForm: (state, action) => {
             state.userSelected = action.payload;
